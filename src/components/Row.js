@@ -1,8 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
+import Medal from './Medal';
 
 const randomColor = () => `hsla(${Math.random() * 360}, 80%, 50%, 1)`
-
 
 const Row = props => {
     const {
@@ -16,6 +16,7 @@ const Row = props => {
         <Wrapper>
             <Info>
                 <Index>{ id }</Index>
+                <Medal></Medal>
                 <Logo color={randomColor()}>{ name.charAt(0) }</Logo>
                 <Author>
                     <Name>{ name }</Name>
