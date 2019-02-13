@@ -1,31 +1,57 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import searchIcon from '../assets/images/search.png';
-import data from '../assets/data';
 import Row from './Row';
-
+    
 class Table extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            items: [],
-            results: []
+            results: [],
+            direction: {
+                name: true,
+                views: true,
+            }
         }
     }
 
     componentDidMount() {
-        this.setState({items: data, results: data});
+        this.setState({results: this.props.items});
     }
 
     handleSearch = e => {
         const inputName = e.target.value.toLowerCase();
         
-        const matches = this.state.items.filter(({name}) => name.toLowerCase().includes(inputName));
+        const matches = this.props.items.filter(({name}) => name.toLowerCase().includes(inputName));
         this.setState({results: matches});
+        this.props.updatePages(matches);
+    }
+
+    sortViews = (direction) => (a, b) => (b.pageviews - a.pageviews) * direction;
+
+    sortName = (direction) => (a, b) => (a.name > b.name) ? 1 * direction : (b.name > a.name) ? -1 * direction : 0;
+
+    //im sorry for this
+    sort = attribute => {
+        const { results } = this.state;
+        const direction = this.state.direction[attribute] ? -1 : 1;
+        const sortFuncs = {
+            'name': direction => this.sortName(direction),
+            'views': direction => this.sortViews(direction),
+        }
+
+        const sorted = results.sort(sortFuncs[attribute](direction))
+        this.setState(prev => ({
+            results: sorted,
+            direction: {
+            ...prev.direction,
+            [attribute]: !prev.direction[attribute]
+        }}))
     }
 
     render() {
         const { results } = this.state;
+        const { page } = this.props;
 
         return (
             <Wrapper>
@@ -37,8 +63,13 @@ class Table extends Component {
                         onKeyUp={this.handleSearch}/>
                 </Search>
                 <Content>
-                    { results && results.slice(0, 10).map((person, i) => 
-                        <Row key={i} {...person} id={i}/>
+                    { results && results.slice((page-1)*10, page*10).map((person, i) => 
+                        <Row 
+                            key={i}
+                            {...person}
+                            index={results.indexOf(person)} 
+                            sort={this.sort}
+                            size={results.length}/>
                     )}
                 </Content>
             </Wrapper>
@@ -49,7 +80,6 @@ class Table extends Component {
 export default Table;
 
 const Wrapper = styled.div`
-    margin: 50px 0;
     overflow: hidden;
     background-color: #fff;
     box-shadow: 0px 5px 39px -6px rgba(0,0,0,0.46);
@@ -71,6 +101,8 @@ const Search = styled.div`
     }
 
     input {
+        width: 100%;
+        height: 100%;
         outline: none;
         border: none;
         background: none;

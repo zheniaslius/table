@@ -2,29 +2,33 @@ import React from 'react';
 import styled from 'styled-components';
 import Medal from './Medal';
 
-const randomColor = () => `hsla(${Math.random() * 360}, 80%, 50%, 1)`
+const randomColor = (id, size) => `hsla(${id * (360/size)}, 80%, 50%, 1)`;
+
+const hasMedal = index => index < 3;
 
 const Row = props => {
     const {
+        index,
         id,
         name,
         count_pub,
-        pageviews
+        pageviews,
+        size
     } = props;
 
     return (
         <Wrapper>
             <Info>
-                <Index>{ id }</Index>
-                <Medal></Medal>
-                <Logo color={randomColor()}>{ name.charAt(0) }</Logo>
+                <Index>{ index + 1 }</Index>
+                <Logo color={randomColor(id, size)}>{ name.charAt(0) }</Logo>
                 <Author>
-                    <Name>{ name }</Name>
+                    <Name onClick={() => props.sort('name')}>{ name }</Name>
                     <br/>
                     <Count active={count_pub}>{ count_pub } публ.</Count>
                 </Author>
             </Info>
-            <Views>{ pageviews.toLocaleString('ru-RU') }</Views>
+            { hasMedal(id) && <Medal index={id}/>}
+            <Views onClick={() => props.sort('views')}>{ pageviews.toLocaleString('ru-RU') }</Views>
         </Wrapper>
     );
 };
@@ -71,6 +75,8 @@ const Author = styled.div`
 `;
 
 const Name = styled.span`
+    cursor: pointer;
+    user-select: none;
     color: #1d3648;
     font-weight: bold;
 `;
@@ -80,6 +86,8 @@ const Count = styled.span`
 `;
 
 const Views = styled.span`
+    cursor: pointer;
+    user-select: none;
     color: #1d3648;
     font-weight: bold;
     font-size: 20px;
